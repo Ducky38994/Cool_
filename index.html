@@ -5,9 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Black POU (BP) & Wheat Trading</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -42,16 +40,15 @@
     <div class="bg-white rounded-xl shadow-xl p-8 w-full max-w-2xl border border-gray-200">
         <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Black POU (BP) & Wheat Trading</h1>
 
-        <!-- User Wallet ID -->
         <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-center mb-6">
             <p class="text-sm font-medium text-indigo-600">Your Wallet Address (Unique Browser ID):</p>
             <p id="userWalletId" class="text-lg font-semibold text-indigo-800 break-words">Generating...</p>
             <button id="copyWalletIdBtn"
                 class="mt-2 text-xs text-indigo-500 hover:text-indigo-700 focus:outline-none">Copy Address</button>
-            <p class="mt-2 text-xs text-indigo-500">This address is unique to your browser. Your data is saved here.</p>
+            <p class="mt-2 text-xs text-indigo-500">This address is unique to your browser. Your data is saved here.
+            </p>
         </div>
 
-        <!-- Status Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
                 <p class="text-sm font-medium text-blue-600">Your BP Balance</p>
@@ -67,7 +64,6 @@
             </div>
         </div>
 
-        <!-- Wallet Operations -->
         <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
             <h2 class="text-xl font-semibold text-gray-700 mb-4">Wallet Operations</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -107,7 +103,6 @@
             </div>
         </div>
 
-        <!-- Trading Section -->
         <div class="p-6 bg-gray-50 rounded-lg border border-gray-200">
             <h2 class="text-xl font-semibold text-gray-700 mb-4">Wheat Trading</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -130,10 +125,8 @@
                         Wheat</button>
                 </div>
             </div>
-            <!-- Removed Fluctuating Price button -->
         </div>
 
-        <!-- Message Display -->
         <div id="messageBox"
             class="mt-6 p-3 bg-gray-100 border border-gray-300 text-gray-700 rounded-lg text-sm text-center min-h-[40px] flex items-center justify-center">
             Welcome to the Black POU (BP) & Wheat Trading App!
@@ -316,7 +309,7 @@
                 let storedWheatPrice = parseFloat(localStorage.getItem(LOCAL_WHEAT_PRICE_KEY));
 
                 this.wheatQuantity = isNaN(storedWheatQuantity) ? 0.0 : storedWheatQuantity;
-                // Wheat price is now fixed as fluctuation is removed
+                // Wheat price will now fluctuate, initialize with a reasonable default
                 this.wheatPrice = isNaN(storedWheatPrice) ? 10.0 : storedWheatPrice;
 
                 this.updateDisplay();
@@ -331,8 +324,15 @@
                 return this.wheatQuantity;
             }
 
-            // Removed fluctuateWheatPrice method
-            // The price will now remain fixed at its initial value or what was last saved.
+            // Method to make the wheat price fluctuate
+            fluctuateWheatPrice() {
+                // Random change between -0.5 and +0.5 BP, ensuring price stays positive
+                const change = (Math.random() * 1.0) - 0.5; // Generates a number between -0.5 and 0.5
+                this.wheatPrice = Math.max(1.0, this.wheatPrice + change); // Ensure price doesn't go below 1 BP
+                this.saveState(); // Save the new fluctuating price
+                this.updateDisplay(); // Update UI
+                walletInstance.showMessage(`Wheat price updated to ${this.wheatPrice.toFixed(2)} BP/KG.`);
+            }
 
             // Allows the user to invest BP to buy Wheat, updating local holdings and BP balance.
             buyWheat(bpAmount, wallet) {
@@ -389,7 +389,7 @@
             // Saves current wheat quantity and price to localStorage
             saveState() {
                 localStorage.setItem(LOCAL_WHEAT_QUANTITY_KEY, this.wheatQuantity.toFixed(2));
-                localStorage.setItem(LOCAL_WHEAT_PRICE_KEY, this.wheatPrice.toFixed(2));
+                localStorage.setItem(LOCAL_WHEAT_PRICE_KEY, this.wheatPrice.toFixed(2)); // Save the fluctuating price
             }
 
             // Updates the UI display for Wheat price and user's Wheat holdings.
@@ -406,6 +406,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             walletInstance = new Wallet();
             marketInstance = new Market();
+
+            // Auto-fluctuate interval for wheat price (every 10 seconds)
+            setInterval(() => {
+                marketInstance.fluctuateWheatPrice();
+            }, 10000); // 10 seconds
 
             // Event Listeners for buttons
 
@@ -466,8 +471,6 @@
                 document.getElementById('sellWheatAmount').value = '';
             });
 
-            // Removed Fluctuating Price button listener
-
             // Copy Wallet ID button
             document.getElementById('copyWalletIdBtn').addEventListener('click', () => {
                 const walletIdText = document.getElementById('userWalletId').innerText;
@@ -483,8 +486,6 @@
                 document.body.removeChild(tempInput);
                 walletInstance.showMessage("Your Wallet Address copied to clipboard!");
             });
-
-            // Removed auto-fluctuate interval
         });
     </script>
 </body>
